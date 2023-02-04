@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>我的简历</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <style id="style"></style>
@@ -13,60 +14,6 @@
     <div id="div1Wrapper">
         <div id="div1"></div>
     </div>
-    
-    <style>
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        *::after{
-            box-sizing: border-box;
-        }
-        *::before{
-            box-sizing: border-box;
-        }
-        #html {
-            word-break: break-all;
-        }
-        #div1 {
-            position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 20px;
-        }
-        /* 给div加上两个伪元素
-        * before
-        * after
-        **/
-        #div1::before{
-            content: '';
-            display: block;
-            position: absolute;
-        }
-        #div1::after{
-            content: '';
-            display: block;
-            position: absolute;
-        }
-        /*媒体查询：屏幕宽度小于500px的（手机）*/
-        @media(max-width: 500px){
-            #html {
-                height: 50vh;
-                overflow: auto;
-            }
-            #div1Wrapper{
-                height: 50vh;
-            }
-            #div1 {
-                
-                position: relative;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-            }
-        }
-    </style>
     <script src="main.js"></script>
 </body>
 </html>
