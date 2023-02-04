@@ -133,7 +133,7 @@ function getBundleURL() {
   try {
     throw new Error();
   } catch (err) {
-    var matches = ('' + err.stack).match(/(https?|file|ftp|chrome-extension|moz-extension):\/\/[^)\n]+/g);
+    var matches = ('' + err.stack).match(/(https?|file|ftp):\/\/[^)\n]+/g);
 
     if (matches) {
       return getBaseURL(matches[0]);
@@ -144,7 +144,7 @@ function getBundleURL() {
 }
 
 function getBaseURL(url) {
-  return ('' + url).replace(/^((?:https?|file|ftp|chrome-extension|moz-extension):\/\/.+)\/[^/]+$/, '$1') + '/';
+  return ('' + url).replace(/^((?:https?|file|ftp):\/\/.+)\/[^/]+$/, '$1') + '/';
 }
 
 exports.getBundleURL = getBundleURLCached;
@@ -206,7 +206,6 @@ function Module(moduleName) {
 }
 
 module.bundle.Module = Module;
-var checkedAssets, assetsToAccept;
 var parent = module.bundle.parent;
 
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
@@ -215,37 +214,18 @@ if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var ws = new WebSocket(protocol + '://' + hostname + ':' + "61602" + '/');
 
   ws.onmessage = function (event) {
-    checkedAssets = {};
-    assetsToAccept = [];
     var data = JSON.parse(event.data);
 
     if (data.type === 'update') {
-      var handled = false;
+      console.clear();
+      data.assets.forEach(function (asset) {
+        hmrApply(global.parcelRequire, asset);
+      });
       data.assets.forEach(function (asset) {
         if (!asset.isNew) {
-          var didAccept = hmrAcceptCheck(global.parcelRequire, asset.id);
-
-          if (didAccept) {
-            handled = true;
-          }
+          hmrAccept(global.parcelRequire, asset.id);
         }
-      }); // Enable HMR for CSS by default.
-
-      handled = handled || data.assets.every(function (asset) {
-        return asset.type === 'css' && asset.generated.js;
       });
-
-      if (handled) {
-        console.clear();
-        data.assets.forEach(function (asset) {
-          hmrApply(global.parcelRequire, asset);
-        });
-        assetsToAccept.forEach(function (v) {
-          hmrAcceptRun(v[0], v[1]);
-        });
-      } else {
-        window.location.reload();
-      }
     }
 
     if (data.type === 'reload') {
@@ -333,7 +313,7 @@ function hmrApply(bundle, asset) {
   }
 }
 
-function hmrAcceptCheck(bundle, id) {
+function hmrAccept(bundle, id) {
   var modules = bundle.modules;
 
   if (!modules) {
@@ -341,27 +321,9 @@ function hmrAcceptCheck(bundle, id) {
   }
 
   if (!modules[id] && bundle.parent) {
-    return hmrAcceptCheck(bundle.parent, id);
+    return hmrAccept(bundle.parent, id);
   }
 
-  if (checkedAssets[id]) {
-    return;
-  }
-
-  checkedAssets[id] = true;
-  var cached = bundle.cache[id];
-  assetsToAccept.push([bundle, id]);
-
-  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
-    return true;
-  }
-
-  return getParents(global.parcelRequire, id).some(function (id) {
-    return hmrAcceptCheck(global.parcelRequire, id);
-  });
-}
-
-function hmrAcceptRun(bundle, id) {
   var cached = bundle.cache[id];
   bundle.hotData = {};
 
@@ -386,6 +348,10 @@ function hmrAcceptRun(bundle, id) {
 
     return true;
   }
+
+  return getParents(global.parcelRequire, id).some(function (id) {
+    return hmrAccept(global.parcelRequire, id);
+  });
 }
 },{}]},{},["C:/Users/Administrator/AppData/Local/Yarn/Data/global/node_modules/parcel/src/builtins/hmr-runtime.js"], null)
 //# sourceMappingURL=/index.js.map
